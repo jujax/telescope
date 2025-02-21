@@ -1,6 +1,9 @@
+#include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include "ArduinoJson.h"
-#include "SPIFFS.h"
+#include <LittleFS.h>
+#include "html_page.h"
+
 
 AsyncWebServer server(80);
 
@@ -11,8 +14,16 @@ void notFound(AsyncWebServerRequest *request)
 
 void initRTS2Server()
 {
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(200, "text/html", INDEX_HTML);
+    });
+
     if (filesystem)
     {
+        server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+            request->send(LittleFS, "/index.html", "text/html");
+        });
+
         server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request) {
             request->send(200, "application/json", "{\"ret\": 0}");
             ESP.restart();
@@ -22,8 +33,8 @@ void initRTS2Server()
             {
                 String s = request->getParam("ssid")->value();
                 String p = request->getParam("pwd")->value();
-                File ssidFile = SPIFFS.open("/ssid.txt", "w");
-                File pwdFile = SPIFFS.open("/pwd.txt", "w");
+                File ssidFile = LittleFS.open("/ssid.txt", "w");
+                File pwdFile = LittleFS.open("/pwd.txt", "w");
                 if (ssidFile && pwdFile)
                 {
                     ssidFile.print(s);

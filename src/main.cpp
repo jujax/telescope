@@ -51,11 +51,11 @@ void setup()
 {
     Serial.begin(115200);
     char *def = "telescope";
-    if (SPIFFS.begin(true))
+    if (LittleFS.begin(true))
     {
         filesystem = true;
-        File ssidFile = SPIFFS.open("/ssid.txt");
-        File pwdFile = SPIFFS.open("/pwd.txt");
+        File ssidFile = LittleFS.open("/ssid.txt");
+        File pwdFile = LittleFS.open("/pwd.txt");
         if (ssidFile && pwdFile)
         {
             char *ssid = strdup(ssidFile.readString().c_str());
@@ -63,10 +63,12 @@ void setup()
             ssidFile.close();
             pwdFile.close();
             wifiConnected = initWifi(ssid, pwd);
-        }
+        } 
+        // si pas de wifi configuré, on crée un point d'accès
+        else
+            initAPWifi();
     }
-    if (!wifiConnected)
-        wifiConnected = initWifi(def, def);
+
     stepper_DA.begin(RPM, MICROSTEPS);
     stepper_DEC.begin(RPM, MICROSTEPS);
     stepper_DEC.enable();

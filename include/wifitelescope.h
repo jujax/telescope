@@ -50,3 +50,11 @@ bool initWifi(char *ssid, char *password)
     }
     return false;
 }
+
+void initAPWifi()
+{
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP("telescope", "telescope");
+    MDNS.begin("telescope");
+    ArduinoOTA.begin();
+}
