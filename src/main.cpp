@@ -6,13 +6,12 @@
 #include "esp_task_wdt.h"
 #include "A4988.h"
 #include "lx200.h"
-
-A4988 stepper_DA(MOTOR_STEPS, AD_DIR, AD_STEP);
-A4988 stepper_DEC(MOTOR_STEPS, DEC_DIR, DEC_STEP);
+#include "motors.h"
 
 RTS2 rts2;
 LX200 lx200(Serial2);
 WifiTelescope wifiTelescope;
+Motors motors;
 
 void taskTime(void *params)
 {
@@ -21,8 +20,8 @@ void taskTime(void *params)
     xLastWakeTime = xTaskGetTickCount();
     while (1)
     {
-        if (!stepper_DA.getCurrentState())
-            stepper_DA.move(4);
+        if (!motors.getCurrentStateDA())
+            motors.moveDA(4);
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(250));
     }
 }
@@ -34,7 +33,7 @@ void taskMotorDA(void *params)
     xLastWakeTime = xTaskGetTickCount();
     while (1)
     {
-        unsigned wait_time_micros1 = stepper_DA.nextAction();
+        unsigned wait_time_micros1 = motors.nextActionDA();
         if (!wait_time_micros1)
             vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100));
     }
@@ -46,7 +45,7 @@ void taskMotorDEC(void *params)
     xLastWakeTime = xTaskGetTickCount();
     while (1)
     {
-        unsigned wait_time_micros2 = stepper_DEC.nextAction();
+        unsigned wait_time_micros2 = motors.nextActionDEC();
         if (!wait_time_micros2)
             vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100));
     }
@@ -60,12 +59,7 @@ void setup()
     Serial.println("Creating AP");
     wifiTelescope.initAP();
 
-    stepper_DA.begin(RPM, MICROSTEPS);
-    stepper_DEC.begin(RPM, MICROSTEPS);
-    stepper_DEC.enable();
-    stepper_DA.enable();
-    stepper_DA.setSpeedProfile(stepper_DA.LINEAR_SPEED, 100, 100);
-    stepper_DEC.setSpeedProfile(stepper_DEC.LINEAR_SPEED, 100, 100);
+    motors.initialize();
 
     xTaskCreate(
         taskTime,   /* Task function. */
@@ -99,7 +93,7 @@ void loop()
     if (move_da)
     {
         Serial.println("Move DA");
-        stepper_DA.startRotate((actual_da - goto_da) * RAPPORT_POULIE);
+        motors.moveDA((actual_da - goto_da) * RAPPORT_POULIE);
         Serial.println((actual_da - goto_da) * RAPPORT_POULIE);
         actual_da = goto_da;
         move_da = false;
@@ -107,7 +101,7 @@ void loop()
     if (move_dec)
     {
         Serial.println("Move DEC");
-        stepper_DEC.startRotate((actual_dec - goto_dec) * RAPPORT_POULIE);
+        motors.moveDEC((actual_dec - goto_dec) * RAPPORT_POULIE);
         Serial.println((actual_dec - goto_dec) * RAPPORT_POULIE);
         actual_dec = goto_dec;
         move_dec = false;
