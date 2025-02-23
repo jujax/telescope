@@ -3,17 +3,17 @@
 // Motor steps per revolution. Most steppers are 200 steps or 1.8 degrees/step
 #define MOTOR_STEPS 200
 
-#define AD_DIR 21
-#define AD_STEP 19
-#define DEC_DIR 14
-#define DEC_STEP 16
+#define AD_DIR 25
+#define AD_STEP 26
+#define DEC_DIR 36
+#define DEC_STEP 34
 
 #define MOTOR_ACCEL 2000
 #define MOTOR_DECEL 1000
 
-#define MS1 10
-#define MS2 11
-#define MS3 12
+#define MS1 22
+#define MS2 21
+#define MS3 23
 
 
 int microsteps = 1;

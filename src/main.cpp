@@ -50,6 +50,7 @@ void taskMotorDEC(void *params)
 void setup()
 {
     Serial.begin(115200);
+    Serial.println("Hello World");
     char *def = "telescope";
     if (LittleFS.begin(true))
     {
@@ -58,15 +59,21 @@ void setup()
         File pwdFile = LittleFS.open("/pwd.txt");
         if (ssidFile && pwdFile)
         {
+            Serial.println("Wifi configuration found");
             char *ssid = strdup(ssidFile.readString().c_str());
             char *pwd = strdup(pwdFile.readString().c_str());
             ssidFile.close();
             pwdFile.close();
             wifiConnected = initWifi(ssid, pwd);
-        } 
+            Serial.println("Wifi connected");
+        }
         // si pas de wifi configuré, on crée un point d'accès
         else
+        {
+            Serial.println("No wifi configuration found");
+            Serial.println("Creating AP");
             initAPWifi();
+        }
     }
 
     stepper_DA.begin(RPM, MICROSTEPS);
@@ -107,17 +114,21 @@ void loop()
 {
     if (move_da)
     {
+        Serial.println("Move DA");
         stepper_DA.startRotate((actual_da - goto_da) * RAPPORT_POULIE);
+        Serial.println((actual_da - goto_da) * RAPPORT_POULIE);
         actual_da = goto_da;
         move_da = false;
     }
     if (move_dec)
     {
+        Serial.println("Move DEC");
         stepper_DEC.startRotate((actual_dec - goto_dec) * RAPPORT_POULIE);
+        Serial.println((actual_dec - goto_dec) * RAPPORT_POULIE);
         actual_dec = goto_dec;
         move_dec = false;
     }
-    if (!move_da && !move_dec && wifiConnected)
-        ArduinoOTA.handle();
+    // if (!move_da && !move_dec && wifiConnected)
+    //     ArduinoOTA.handle();
     delay(1000);
 }
