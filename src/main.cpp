@@ -5,9 +5,14 @@
 #include "soc/rtc_wdt.h"
 #include "esp_task_wdt.h"
 #include "A4988.h"
+#include "lx200.h"
 
 A4988 stepper_DA(MOTOR_STEPS, AD_DIR, AD_STEP);
 A4988 stepper_DEC(MOTOR_STEPS, DEC_DIR, DEC_STEP);
+
+RTS2 rts2;
+LX200 lx200(Serial2);
+WifiTelescope wifiTelescope;
 
 void taskTime(void *params)
 {
@@ -51,30 +56,9 @@ void setup()
 {
     Serial.begin(115200);
     Serial.println("Hello World");
-    char *def = "telescope";
-    if (LittleFS.begin(true))
-    {
-        filesystem = true;
-        File ssidFile = LittleFS.open("/ssid.txt");
-        File pwdFile = LittleFS.open("/pwd.txt");
-        if (ssidFile && pwdFile)
-        {
-            Serial.println("Wifi configuration found");
-            char *ssid = strdup(ssidFile.readString().c_str());
-            char *pwd = strdup(pwdFile.readString().c_str());
-            ssidFile.close();
-            pwdFile.close();
-            wifiConnected = initWifi(ssid, pwd);
-            Serial.println("Wifi connected");
-        }
-        // si pas de wifi configuré, on crée un point d'accès
-        else
-        {
-            Serial.println("No wifi configuration found");
-            Serial.println("Creating AP");
-            initAPWifi();
-        }
-    }
+    
+    Serial.println("Creating AP");
+    wifiTelescope.initAP();
 
     stepper_DA.begin(RPM, MICROSTEPS);
     stepper_DEC.begin(RPM, MICROSTEPS);
@@ -107,7 +91,7 @@ void setup()
         9,              /* priority of the task */
         NULL, 1);       /* Task handle to keep track of created task */
 
-    initRTS2Server();
+    rts2.begin();
 }
 
 void loop()

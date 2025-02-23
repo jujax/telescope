@@ -31,13 +31,6 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
         </div>
     
         <div class="card">
-            <h2>WiFi Settings</h2>
-            <input type="text" id="ssid" placeholder="SSID">
-            <input type="password" id="password" placeholder="Password">
-            <button class="btn" onclick="saveWifi()">Save</button>
-        </div>
-    
-        <div class="card">
             <h2>System</h2>
             <button class="btn" onclick="reboot()">Reboot</button>
         </div>
@@ -55,12 +48,6 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
                 const dec=document.getElementById('gotoDEC').value;
                 fetch(`/api/cmd?d=telescope&c=move ${ra} ${dec}`).then(r=>r.json())
                 .then(d=>{d.ret===0?alert('Command sent'):alert('Error')});
-            }
-            function saveWifi(){
-                const s=document.getElementById('ssid').value;
-                const p=document.getElementById('password').value;
-                fetch(`/settings?ssid=${encodeURIComponent(s)}&pwd=${encodeURIComponent(p)}`)
-                .then(r=>r.json()).then(d=>{alert('WiFi settings saved')});
             }
             function reboot(){
                 if(confirm('Reboot?'))fetch('/reboot').then(r=>r.json()).then(d=>{alert('Rebooting...')});
